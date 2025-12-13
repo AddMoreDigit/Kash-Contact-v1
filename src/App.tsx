@@ -5,7 +5,7 @@ function App() {
 
   return (
     <main>
-      deploy
+      deploying
     </main>
   );
 }
