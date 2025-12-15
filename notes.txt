@@ -1,0 +1,2 @@
+ Using the old prop-based SelectUserTypePage component with React Router ,had to update your page components to use navigation hooks 
+ instead of props.

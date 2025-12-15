@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import type { Page } from '@/types/page.type';
 import { toast } from 'sonner';
 import { Logo } from './components/layout';
@@ -26,6 +26,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     businessName?: string;
     businessEmail?: string;
@@ -131,7 +132,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
       toast.error('Please fix the errors in the form');
       return;
     }
-
+    setIsSubmitting(true);
 
 
     try {
@@ -165,6 +166,8 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
       } else {
         toast.error('Signup failed. Please try again.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -329,7 +332,11 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
             onClick={handleSignUp}
             className="w-full bg-[#8363f2] text-white py-3 rounded-md text-base text-center hover:bg-[#7354e1] transition-colors mb-6 cursor-pointer"
           >
-            Sign Up
+            {isSubmitting ? (<><Loader2 className="h-4 w-4 animate-spin" />
+              Signing up </>
+
+            ) : ' Sign Up'}
+
           </button>
 
           {/* Login Link */}

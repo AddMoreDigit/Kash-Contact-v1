@@ -5,13 +5,13 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   // Get account type from custom attributes
   const accountType = event.request.userAttributes['custom:accountType'] || 'user';
   
-  // Set group based on account type (convert to lowercase to match your groups)
+  // Convert to lowercase to match your groups ["user","vendor","corporate"]
   const groupName = accountType.toLowerCase();
 
   const command = new AdminAddUserToGroupCommand({
     UserPoolId: event.userPoolId,
     Username: event.userName,
-    GroupName: groupName // This will be 'user', 'vendor', or 'corporate'
+    GroupName: groupName
   });
 
   const client = new CognitoIdentityProviderClient({});
