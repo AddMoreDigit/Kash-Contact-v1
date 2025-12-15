@@ -8,8 +8,9 @@ import { postConfirmation } from '../functions/post-confirmation/resource';
 export const auth = defineAuth({
   loginWith: {
     email: true,
-  }, userAttributes: {
-    fullname: {
+  },
+   userAttributes: {
+    givenName: {
       mutable: true,
       required: true,
     },

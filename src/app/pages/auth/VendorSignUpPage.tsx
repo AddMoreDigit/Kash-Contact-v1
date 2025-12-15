@@ -142,8 +142,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
         options: {
           userAttributes: {
             email: businessEmail,
-            // Try without 'custom:' prefix since fullname is a standard attribute
-            fullname: businessName,
+            given_name: businessName,
             "custom:accountType": accountType
           },
           autoSignIn: true
