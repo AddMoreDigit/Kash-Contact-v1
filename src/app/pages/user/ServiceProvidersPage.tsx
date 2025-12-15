@@ -1,112 +1,85 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { UserSidebar } from '../../components/layout/UserSidebar';
 import svgPaths from '../../../imports/svg-c93d13tepm';
-//import imgKcLogoWhite2Transparent1 from 'figma:asset/4b4bad59041302b06eae37218f1d3bd7c64d7d1e.png';
 //import imgRectangle137 from 'figma:asset/2d90d1ffe99df5817a38c395c08ec5116a7be340.png';
 //import imgRectangle143 from 'figma:asset/e646802d554bb1fa6ce3ceb35bf48236c77c77e1.png';
 //import imgRectangle138 from 'figma:asset/87102388d503206b3b0fb177ad63642a9945094b.png';
 //import imgRectangle144 from 'figma:asset/9f1f8c1da3629502bc71901baf4363bbeeeff080.png';
 //import imgRectangle139 from 'figma:asset/5d9bf658577635a939c9246246e5a8bf87eb8ec2.png';
 //import imgRectangle145 from 'figma:asset/09008cafd958ef228fae370333984be464a418ff.png';
-//import imgRectangle349 from 'figma:asset/a3825e566b26b37668a63ccc1ccf01de1ed9f478.png';
 
 type Page = 'dashboard' | 'campaigns' | 'vouchers' | 'transactions' | 'profile' | 'overview' | 'draft' | 'howItWorks' | 'campaignDetail' | 'messaging' | 'serviceDetail' | 'selectedServices' | 'createCampaign' | 'manageCampaign' | 'contributors' | 'contributorDetail' | 'campaignSchedule' | 'campaignsHistory' | 'contribute' | 'individualCampaign' | 'groupCampaign' | 'managingCampaigns' | 'helpSupport' | 'saveDraft' | 'selectServices' | 'signup' | 'vendorSignup' | 'otpVerification' | 'signupSuccess' | 'login' | 'forgotPassword' | 'createNewPassword' | 'selectUserType' | 'vendorDashboard' | 'corporateDashboard' | 'serviceProviders';
 
-interface DashboardPageProps {
+interface ServiceProvidersPageProps {
   onNavigate: (page: Page) => void;
   onShowNotifications?: () => void;
   hasUnreadNotifications?: boolean;
   onShowCart?: () => void;
   onSearch?: (query: string) => void;
   onLogout?: () => void;
-  accountType?: 'user' | 'vendor' | 'corporate';
 }
 
-interface SidebarItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}
-
-function SidebarItem({ icon, label, active, onClick }: SidebarItemProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-        active
-          ? 'bg-[#8363f2] text-white'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
-    >
-      <span className="w-5 h-5">{icon}</span>
-      <span className="text-[14px]">{label}</span>
-    </button>
-  );
-}
-
-export function DashboardPage({ 
+export function ServiceProvidersPage({ 
   onNavigate, 
   onShowNotifications, 
   hasUnreadNotifications = false, 
   onShowCart,
   onSearch,
-  onLogout,
-  accountType
-}: DashboardPageProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  onLogout
+}: ServiceProvidersPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Featured Service Providers for Hero Section
-  const featuredProviders = [
+  const serviceProviders = [
     {
-      id: 1,
+      id: '1',
       name: 'Blue Water Hotel',
       location: 'Durban',
-      category: 'Accommodation',
-      image: '/assets/a3825e566b26b37668a63ccc1ccf01de1ed9f478.png'
+      category: 'accommodation',
+      image: '/assets/e646802d554bb1fa6ce3ceb35bf48236c77c77e1.png'
     },
     {
-      id: 2,
-      name: 'Seaview Lodge',
-      location: 'Cape Town',
+      id: '2',
+      name: 'Lekkeslaap',
+      location: 'Durban',
+      category: 'food service & Motel',
+      image: '/assets/9f1f8c1da3629502bc71901baf4363bbeeeff080.png'
+    },
+    {
+      id: '3',
+      name: 'Cape town Beach',
+      location: 'Cape town',
       category: 'Accommodation',
+      image: '/assets/09008cafd958ef228fae370333984be464a418ff.png'
+    },
+    {
+      id: '4',
+      name: 'Seaview Lodge',
+      location: 'Cape town',
+      category: 'accomodation',
       image: '/assets/2d90d1ffe99df5817a38c395c08ec5116a7be340.png'
     },
     {
-      id: 3,
-      name: 'Island Paradise',
+      id: '5',
+      name: 'Tastebites catering',
+      location: 'Durban',
+      category: 'food service',
+      image: '/assets/87102388d503206b3b0fb177ad63642a9945094b.png'
+    },
+    {
+      id: '6',
+      name: 'Island paradise',
       location: 'Zanzibar',
       category: 'Accommodation',
       image: '/assets/5d9bf658577635a939c9246246e5a8bf87eb8ec2.png'
     }
   ];
 
-  // Auto-advance carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuredProviders.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [featuredProviders.length]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch && searchQuery.trim()) {
       onSearch(searchQuery);
     }
-  };
-
-  const handlePrevSlide = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentSlide((prev) => (prev - 1 + featuredProviders.length) % featuredProviders.length);
-  };
-
-  const handleNextSlide = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentSlide((prev) => (prev + 1) % featuredProviders.length);
   };
 
   return (
@@ -147,7 +120,7 @@ export function DashboardPage({
           <div className="flex items-center gap-4">
             {/* Create Button */}
             <button
-              onClick={() => onNavigate('serviceProviders')}
+              onClick={() => onNavigate('createCampaign')}
               className="bg-[#8363f2] hover:bg-[#7354e1] text-white px-6 py-2 rounded-lg font-['Inter',sans-serif] text-[14px] font-medium transition-colors"
             >
               Create
@@ -200,67 +173,6 @@ export function DashboardPage({
         {/* Content Area */}
         <div className="flex-1 bg-gray-50 overflow-auto">
           <div className="p-8">
-            {/* Hero Carousel */}
-            <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
-              <div 
-                onClick={() => onNavigate('serviceDetail')}
-                className="relative h-[280px] w-full cursor-pointer group"
-              >
-                <img
-                  src={featuredProviders[currentSlide].image}
-                  alt={featuredProviders[currentSlide].name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-
-                {/* Provider Info Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                  <h3 className="font-['Inter',sans-serif] text-white text-[24px] font-semibold mb-1">
-                    {featuredProviders[currentSlide].name}
-                  </h3>
-                  <p className="font-['Inter',sans-serif] text-white/90 text-[14px]">
-                    {featuredProviders[currentSlide].location} / {featuredProviders[currentSlide].category}
-                  </p>
-                </div>
-
-                {/* Left Arrow */}
-                <button 
-                  onClick={handlePrevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
-                >
-                  <ChevronLeft size={32} className="text-[#2d1b69]" strokeWidth={2.5} />
-                </button>
-
-                {/* Right Arrow */}
-                <button 
-                  onClick={handleNextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
-                >
-                  <ChevronRight size={32} className="text-[#2d1b69]" strokeWidth={2.5} />
-                </button>
-
-                {/* Slide Indicators */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {featuredProviders.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentSlide(index);
-                      }}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentSlide 
-                          ? 'bg-white w-8' 
-                          : 'bg-white/50 hover:bg-white/75'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* Service Providers Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-['Inter',sans-serif] font-semibold text-[20px] text-gray-900">
@@ -291,7 +203,7 @@ export function DashboardPage({
 
             {/* Service Provider Cards - 3 Column Grid */}
             <div className="grid grid-cols-3 gap-6 mb-8">
-              {featuredProviders.map((provider) => (
+              {serviceProviders.map((provider) => (
                 <button
                   key={provider.id}
                   onClick={() => onNavigate('serviceDetail')}

@@ -1,63 +1,33 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
 import { UserSidebar } from '../../components/layout/UserSidebar';
 import svgPaths from '../../../imports/svg-c93d13tepm';
-//import imgKcLogoWhite2Transparent1 from 'figma:asset/4b4bad59041302b06eae37218f1d3bd7c64d7d1e.png';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { toast } from 'sonner';
 //import imgRectangle137 from 'figma:asset/2d90d1ffe99df5817a38c395c08ec5116a7be340.png';
-//import imgRectangle143 from 'figma:asset/e646802d554bb1fa6ce3ceb35bf48236c77c77e1.png';
-//import imgRectangle138 from 'figma:asset/87102388d503206b3b0fb177ad63642a9945094b.png';
-//import imgRectangle144 from 'figma:asset/9f1f8c1da3629502bc71901baf4363bbeeeff080.png';
 //import imgRectangle139 from 'figma:asset/5d9bf658577635a939c9246246e5a8bf87eb8ec2.png';
-//import imgRectangle145 from 'figma:asset/09008cafd958ef228fae370333984be464a418ff.png';
 //import imgRectangle349 from 'figma:asset/a3825e566b26b37668a63ccc1ccf01de1ed9f478.png';
 
 type Page = 'dashboard' | 'campaigns' | 'vouchers' | 'transactions' | 'profile' | 'overview' | 'draft' | 'howItWorks' | 'campaignDetail' | 'messaging' | 'serviceDetail' | 'selectedServices' | 'createCampaign' | 'manageCampaign' | 'contributors' | 'contributorDetail' | 'campaignSchedule' | 'campaignsHistory' | 'contribute' | 'individualCampaign' | 'groupCampaign' | 'managingCampaigns' | 'helpSupport' | 'saveDraft' | 'selectServices' | 'signup' | 'vendorSignup' | 'otpVerification' | 'signupSuccess' | 'login' | 'forgotPassword' | 'createNewPassword' | 'selectUserType' | 'vendorDashboard' | 'corporateDashboard' | 'serviceProviders';
 
-interface DashboardPageProps {
+interface FirstTimeUserDashboardProps {
   onNavigate: (page: Page) => void;
   onShowNotifications?: () => void;
   hasUnreadNotifications?: boolean;
   onShowCart?: () => void;
-  onSearch?: (query: string) => void;
   onLogout?: () => void;
-  accountType?: 'user' | 'vendor' | 'corporate';
+  onDismiss?: () => void;
 }
 
-interface SidebarItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}
-
-function SidebarItem({ icon, label, active, onClick }: SidebarItemProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-        active
-          ? 'bg-[#8363f2] text-white'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
-    >
-      <span className="w-5 h-5">{icon}</span>
-      <span className="text-[14px]">{label}</span>
-    </button>
-  );
-}
-
-export function DashboardPage({ 
+export function FirstTimeUserDashboard({ 
   onNavigate, 
   onShowNotifications, 
-  hasUnreadNotifications = false, 
+  hasUnreadNotifications, 
   onShowCart,
-  onSearch,
   onLogout,
-  accountType
-}: DashboardPageProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  onDismiss
+}: FirstTimeUserDashboardProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Featured Service Providers for Hero Section
   const featuredProviders = [
@@ -94,8 +64,8 @@ export function DashboardPage({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch && searchQuery.trim()) {
-      onSearch(searchQuery);
+    if (searchQuery.trim()) {
+      toast.success(`Searching for: ${searchQuery}`);
     }
   };
 
@@ -109,39 +79,69 @@ export function DashboardPage({
     setCurrentSlide((prev) => (prev + 1) % featuredProviders.length);
   };
 
-  return (
-    <div className="flex min-h-screen bg-white">
-      {/* Sidebar */}
-      <UserSidebar
-        activePage="dashboard"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+  const howItWorksSteps = [
+    {
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="#8363F2" strokeWidth="2" fill="none" />
+          <path d="M9 11L11 13L15 9" stroke="#8363F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      title: 'Pick service provider',
+    },
+    {
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+          <path d="M12 4L4 8L12 12L20 8L12 4Z" stroke="#8363F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 12L12 16L20 12" stroke="#8363F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      title: 'Create Campaign',
+    },
+    {
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="4" stroke="#8363F2" strokeWidth="2" />
+          <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#8363F2" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+      title: 'Contribute',
+    },
+  ];
 
+  return (
+    <div className="flex h-screen bg-white overflow-hidden">
+      {/* Sidebar */}
+      <UserSidebar 
+        activePage="dashboard" 
+        onNavigate={onNavigate} 
+        onLogout={onLogout}
+        onShowNotifications={onShowNotifications}
+        hasUnreadNotifications={hasUnreadNotifications}
+        onShowCart={onShowCart}
+      />
+      
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
+      <div className="flex-1 flex flex-col overflow-y-auto bg-white">
+        {/* Top Navbar */}
         <div className="h-[60px] bg-white border-b border-gray-300 flex items-center justify-between px-6">
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md">
+          <div className="flex-1 max-w-md">
             <div className="relative bg-[#f5f5fa] rounded-xl shadow-[inset_2px_2px_4px_rgba(170,170,204,0.25),inset_-2px_-2px_4px_rgba(255,255,255,0.5)]">
               <input
                 type="text"
+                placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search"
                 className="w-full bg-transparent px-4 py-2 font-['SF_Pro_Rounded',sans-serif] text-[#7878ab] text-sm outline-none"
               />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f5f5fa] rounded-full shadow-[2px_2px_4px_rgba(170,170,204,0.5),-2px_-2px_4px_#ffffff] flex items-center justify-center hover:opacity-80 transition-opacity"
-              >
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f5f5fa] rounded-full shadow-[2px_2px_4px_rgba(170,170,204,0.5),-2px_-2px_4px_#ffffff] flex items-center justify-center hover:opacity-80 transition-opacity">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
                   <path clipRule="evenodd" d={svgPaths.p250aca00} fill="#7878AB" fillRule="evenodd" />
                 </svg>
               </button>
             </div>
-          </form>
+          </div>
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
@@ -197,9 +197,33 @@ export function DashboardPage({
           </div>
         </div>
 
-        {/* Content Area */}
+        {/* Content */}
         <div className="flex-1 bg-gray-50 overflow-auto">
           <div className="p-8">
+            {/* How it works Section */}
+            <div className="mb-8">
+              <h2 className="font-['Inter',sans-serif] text-[20px] font-semibold text-black mb-6">
+                How it works
+              </h2>
+              <div className="flex items-center justify-center gap-8">
+                {howItWorksSteps.map((step, index) => (
+                  <div key={index} className="flex items-center gap-8">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 bg-[#F3F0FF] rounded-lg flex items-center justify-center">
+                        {step.icon}
+                      </div>
+                      <p className="font-['Inter',sans-serif] text-[14px] text-gray-700 text-center">
+                        {step.title}
+                      </p>
+                    </div>
+                    {index < howItWorksSteps.length - 1 && (
+                      <ChevronRight className="w-5 h-5 text-gray-400 mt-[-24px]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Hero Carousel */}
             <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
               <div 
