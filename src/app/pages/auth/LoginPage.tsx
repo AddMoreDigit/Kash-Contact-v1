@@ -137,7 +137,7 @@ export function LoginPage({
         </div>
 
         {/* Form */}
-        <div className="w-full max-w-md mt-10">
+        <div className="w-full max-w-md mt-5">
           {/* <h2 className="text-3xl text-black mb-8 text-center">
             Log In
           </h2> */}
@@ -215,7 +215,7 @@ export function LoginPage({
             Don&apos;t have an account?{" "}
             <button
               onClick={handleRegister}
-              className="text-[#8363f2] underline hover:opacity-80 transition-opacity"
+              className="text-[#8363f2] underline hover:opacity-80 transition-opacity cursor-pointer"
             >
               Register here
             </button>

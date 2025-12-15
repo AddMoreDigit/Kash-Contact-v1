@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import type { Page } from '@/types/page.type';
 import { toast } from 'sonner';
 import { Logo } from './components/layout';
+import { signUp, resendSignUpCode } from "aws-amplify/auth";
 
 interface VendorSignUpPageProps {
   onNavigate: (page: Page) => void;
@@ -125,33 +126,47 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignUp = () => {
-    if (validateForm()) {
-      const userData: VendorSignUpData = {
-        businessName,
-        businessEmail,
-        password,
-        acceptedTerms,
-        accountType,
-      };
+const handleSignUp = async () => {
+  if (!validateForm()) {
+    toast.error('Please fix the errors in the form');
+    return;
+  }
 
-      if (onSignUp) {
-        onSignUp(userData);
+
+
+  try {
+    // AWS Amplify signup with accountType as custom attribute
+    const { isSignUpComplete } = await signUp({
+      username: businessEmail,
+      password: password,
+      options: {
+        userAttributes: {
+           email:businessEmail,
+          fullname: businessName,
+          'custom:accountType': accountType // 'vendor', 'corporate', or 'user'
+        },
+        autoSignIn: true
       }
+    });
 
-      toast.success('Account created successfully! Please verify your email.');
-      // Navigate to OTP verification
-      setTimeout(() => {
-        onNavigate('otpVerification');
-      }, 1000);
-
-      if (onCreateAccount) {
-        onCreateAccount(businessEmail);
-      }
+    if (!isSignUpComplete) {
+      toast.success('Account created! Please check your email for verification.');
+      onNavigate('otpVerification');
     } else {
-      toast.error('Please fix the errors in the form');
+      toast.success('Account created successfully!');
+      onNavigate('login');
     }
-  };
+
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    
+    if (error.name === 'UsernameExistsException') {
+      toast.error('An account with this email already exists');
+    } else {
+      toast.error('Signup failed. Please try again.');
+    }
+  } 
+};
 
   const handleBack = () => {
     onNavigate('signup');
@@ -196,7 +211,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
       </div>
 
       {/* Right Section - White Background */}
-      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden">
+      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden mt-20">
         {/* Logo */}
         <div className="mb-12">
           <Logo className="h-10" />
@@ -276,9 +291,9 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
                 className="absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity"
               >
                 {showPassword ? (
-                  <EyeOff size={18} className="text-gray-600" />
+                  <EyeOff size={18} className="text-gray-600 cursor-pointer" />
                 ) : (
-                  <Eye size={18} className="text-gray-600" />
+                  <Eye size={18} className="text-gray-600 cursor-pointer" />
                 )}
               </button>
             </div>
@@ -312,7 +327,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
           {/* Sign Up Button */}
           <button
             onClick={handleSignUp}
-            className="w-full bg-[#8363f2] text-white py-3 rounded-md text-base text-center hover:bg-[#7354e1] transition-colors mb-6"
+            className="w-full bg-[#8363f2] text-white py-3 rounded-md text-base text-center hover:bg-[#7354e1] transition-colors mb-6 cursor-pointer"
           >
             Sign Up
           </button>
@@ -322,7 +337,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
             Already have an account?{' '}
             <button
               onClick={() => onNavigate('login')}
-              className="text-[#8363f2] underline hover:opacity-80 transition-opacity"
+              className="text-[#8363f2] underline hover:opacity-80 transition-opacity cursor-pointer"
             >
               Login here
             </button>
