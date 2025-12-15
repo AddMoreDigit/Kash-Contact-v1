@@ -429,84 +429,159 @@ export function OTPVerificationPage({
     inputRefs.current[nextIndex]?.focus();
   };
 
-  const handleVerify = async () => {
-    const otpValue = otp.join('');
-    
-    if (otpValue.length !== 6) {
-      toast.error('Please enter all 6 digits');
-      return;
-    }
+// const handleVerify = async () => {
+//   const otpValue = otp.join('');
+  
+//   if (otpValue.length !== 6) {
+//     toast.error('Please enter all 6 digits');
+//     return;
+//   }
 
-    setIsSubmitting(true);
+//   setIsSubmitting(true);
 
-    try {
-      if (isSignupFlow) {
-        // For signup verification
-        await confirmSignUp({
-          username: userEmail.replace('*********', ''), 
-          confirmationCode: otpValue
-        });
+//   try {
+//     if (isSignupFlow) {
+//       // For signup verification
+//       await confirmSignUp({
+//         username: userEmail.replace('*********', ''), 
+//         confirmationCode: otpValue
+//       });
 
-        toast.success('Email verified successfully!');
-        
-        setTimeout(() => {
-          onNavigate('signupSuccess');
-        }, 1000);
-      } else {
-        // For password reset verification - VERIFY IMMEDIATELY
-        const email = userEmail.replace('*********', '');
-        
-        // Try a test password that meets requirements
-        const testPassword = "TestPassword123!";
-        
-        // Verify the code is valid by attempting to reset password
-        await confirmResetPassword({
-          username: email,
-          newPassword: testPassword,
-          confirmationCode: otpValue
-        });
-
-        // If successful, store the code for the real password change
-        localStorage.setItem('resetPasswordCode', otpValue);
-        localStorage.setItem('resetPasswordEmail', email);
-        
-        toast.success('Code verified! Set your new password.');
-        
-        setTimeout(() => {
-          onNavigate('createNewPassword');
-        }, 1000);
-      }
-
-    } catch (error: any) {
-      console.error('Verification error:', error);
+//       toast.success('Email verified successfully!');
       
-      if (error.name === 'CodeMismatchException') {
-        toast.error('Invalid verification code');
-      } else if (error.name === 'ExpiredCodeException') {
-        toast.error('Verification code has expired. Please request a new one.');
-        setOtp(['', '', '', '', '', '']);
-        setTimer(0);
-      } else if (error.name === 'InvalidPasswordException') {
-        // This means the code IS valid, but test password didn't meet requirements
-        // Store and proceed anyway
-        const email = userEmail.replace('*********', '');
-        localStorage.setItem('resetPasswordCode', otpValue);
-        localStorage.setItem('resetPasswordEmail', email);
-        
-        toast.success('Code verified! Set your new password.');
-        setTimeout(() => {
-          onNavigate('createNewPassword');
-        }, 1000);
-      } else if (error.name === 'NotAuthorizedException') {
-        toast.error('User is already confirmed');
-        setTimeout(() => onNavigate('login'), 1000);
-      } else {
-        toast.error('Verification failed. Please try again.');
-      }
-    } finally {
-      setIsSubmitting(false);
+//       setTimeout(() => {
+//         onNavigate('signupSuccess');
+//       }, 1000);
+//     } else {
+//       // For password reset - JUST VERIFY, DON'T SUBMIT NEW PASSWORD
+//       const email = userEmail.replace('*********', '');
+      
+//       // Store the verification code
+//       localStorage.setItem('resetPasswordCode', otpValue);
+//       localStorage.setItem('resetPasswordEmail', email);
+      
+//       // Optional: You could add an API call here to verify the code
+//       // without actually resetting the password
+      
+//       toast.success('Code verified! Set your new password.');
+      
+//       setTimeout(() => {
+//         onNavigate('createNewPassword');
+//       }, 1000);
+//     }
+
+//   } catch (error: any) {
+//     console.error('Verification error:', error);
+    
+//     if (error.name === 'CodeMismatchException') {
+//       toast.error('Invalid verification code');
+//     } else if (error.name === 'ExpiredCodeException') {
+//       toast.error('Verification code has expired. Please request a new one.');
+//       setOtp(['', '', '', '', '', '']);
+//       setTimer(0);
+//     } else if (error.name === 'NotAuthorizedException') {
+//       toast.error('User is already confirmed');
+//       setTimeout(() => onNavigate('login'), 1000);
+//     } else if (error.name === 'LimitExceededException') {
+//       toast.error('Too many attempts. Please wait a few minutes and try again.');
+//       // Disable further attempts for a while
+//       setTimer(300); // Reset timer to 5 minutes
+//     } else {
+//       toast.error('Verification failed. Please try again.');
+//     }
+//   } finally {
+//     setIsSubmitting(false);
+//   }
+// };
+
+const handleVerify = async () => {
+  const otpValue = otp.join('');
+  
+  if (otpValue.length !== 6) {
+    toast.error('Please enter all 6 digits');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // DEBUG LOGS
+    console.log('DEBUG: Attempting verification with:', {
+      username: userEmail.replace('*********', ''),
+      emailDisplay: userEmail,
+      otpEntered: otpValue,
+      otpExpected: '010265', // Replace with actual received code
+      isSignupFlow: isSignupFlow,
+      timestamp: new Date().toISOString()
+    });
+
+    if (isSignupFlow) {
+      // For signup verification
+      const confirmParams = {
+        username: userEmail.replace('*********', ''), 
+        confirmationCode: otpValue
+      };
+      
+      console.log('DEBUG: Calling confirmSignUp with:', confirmParams);
+      
+      await confirmSignUp(confirmParams);
+
+      toast.success('Email verified successfully!');
+      
+      setTimeout(() => {
+        onNavigate('signupSuccess');
+      }, 1000);
+    } else {
+      // For password reset - use a test approach
+      const email = userEmail.replace('*********', '');
+      const testPassword = "TestPassword123!";
+      
+      console.log('DEBUG: Password reset flow for email:', email);
+      console.log('DEBUG: Using OTP:', otpValue);
+      
+      // Store for CreateNewPasswordPage to use
+      localStorage.setItem('resetPasswordCode', otpValue);
+      localStorage.setItem('resetPasswordEmail', email);
+      localStorage.setItem('resetPasswordTimestamp', Date.now().toString());
+      
+      toast.success('Code accepted. Please set your new password.');
+      
+      setTimeout(() => {
+        onNavigate('createNewPassword');
+      }, 1000);
     }
-  };
+
+  } catch (error: any) {
+    console.error('Verification error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      time: new Date().toISOString()
+    });
+    
+    // Check for specific Cognito errors
+    if (error.name === 'CodeMismatchException') {
+      // Show the actual code entered vs expected (for debugging)
+      console.log('Code mismatch - Entered:', otp.join(''), 'Expected format: 6 digits');
+      toast.error('Invalid verification code. Please check and try again.');
+    } else if (error.name === 'ExpiredCodeException') {
+      toast.error('Verification code has expired. Please request a new one.');
+      setOtp(['', '', '', '', '', '']);
+      setTimer(0);
+    } else if (error.name === 'NotAuthorizedException') {
+      toast.error('User is already confirmed or not found.');
+      setTimeout(() => onNavigate('login'), 1000);
+    } else if (error.name === 'UserNotFoundException') {
+      toast.error('User not found. Please check your email.');
+    } else if (error.name === 'InvalidParameterException') {
+      toast.error('Invalid parameters. Please try again.');
+    } else {
+      toast.error(`Verification failed: ${error.message || 'Please try again.'}`);
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleResendCode = async () => {
     if (timer > 0) return;
@@ -614,7 +689,7 @@ export function OTPVerificationPage({
         <button
           onClick={handleVerify}
           disabled={isSubmitting || otp.some(d => !d)}
-          className="absolute bg-[#8363f2] flex items-center justify-center left-1/2 rounded-md top-[260px] translate-x-[-50%] h-[40px] w-[180px] hover:bg-[#7354e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute bg-[#8363f2] flex items-center justify-center left-1/2 rounded-md top-[260px] translate-x-[-50%] h-[40px] w-[180px] hover:bg-[#7354e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <p className="font-['Inter',sans-serif] font-semibold text-[14px] text-white">
             {isSubmitting ? 'Verifying...' : 'Verify'}
@@ -625,7 +700,7 @@ export function OTPVerificationPage({
         <button
           onClick={handleResendCode}
           disabled={timer > 0 || isResending}
-          className={`absolute flex items-center justify-center left-1/2 rounded-md top-[310px] translate-x-[-50%] h-[40px] w-[180px] transition-colors ${
+          className={`cursor-pointer absolute flex items-center justify-center left-1/2 rounded-md top-[310px] translate-x-[-50%] h-[40px] w-[180px] transition-colors ${
             timer > 0 || isResending
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-[#8363f2] hover:bg-[#7354e1]'

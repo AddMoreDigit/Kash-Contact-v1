@@ -143,8 +143,9 @@
 //     </div>
 //   );
 // }
-import { useState } from 'react';
-import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
+
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import type { Page } from '@/types/page.type';
 import { toast } from 'sonner';
 import { confirmResetPassword } from "aws-amplify/auth";
@@ -161,8 +162,28 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [hasValidCode, setHasValidCode] = useState(false);
+
+  useEffect(() => {
+    // Check if we have a verified code
+    const email = localStorage.getItem('resetPasswordEmail');
+    const code = localStorage.getItem('resetPasswordCode');
+    const verified = localStorage.getItem('resetPasswordVerified');
+    
+    if (!email || !code || verified !== 'true') {
+      toast.error('Please verify your code first');
+      onNavigate('otpVerification');
+    } else {
+      setHasValidCode(true);
+    }
+  }, [onNavigate]);
 
   const handleContinue = async () => {
+    if (!hasValidCode) {
+      toast.error('Code not verified');
+      return;
+    }
+
     if (!newPassword || !confirmPassword) {
       toast.error('Please fill in all fields');
       return;
@@ -181,7 +202,6 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
     setIsSubmitting(true);
 
     try {
-      // Get stored email and code from localStorage
       const email = localStorage.getItem('resetPasswordEmail');
       const code = localStorage.getItem('resetPasswordCode');
       
@@ -204,21 +224,36 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
       // Clean up localStorage
       localStorage.removeItem('resetPasswordCode');
       localStorage.removeItem('resetPasswordEmail');
+      localStorage.removeItem('resetPasswordVerified');
       
       setTimeout(() => {
         onNavigate('login');
-      }, 1000);
+      }, 2000);
 
     } catch (error: any) {
       console.error('Reset password error:', error);
       
       if (error.name === 'CodeMismatchException') {
-        toast.error('Invalid verification code');
+        toast.error('Invalid or expired verification code');
+        
+        // Clear invalid data and redirect
+        localStorage.removeItem('resetPasswordCode');
+        localStorage.removeItem('resetPasswordEmail');
+        localStorage.removeItem('resetPasswordVerified');
+        
+        setTimeout(() => {
+          onNavigate('forgotPassword');
+        }, 1500);
       } else if (error.name === 'ExpiredCodeException') {
         toast.error('Verification code has expired');
-        onNavigate('forgotPassword');
+        localStorage.removeItem('resetPasswordCode');
+        localStorage.removeItem('resetPasswordEmail');
+        localStorage.removeItem('resetPasswordVerified');
+        setTimeout(() => onNavigate('forgotPassword'), 1500);
       } else if (error.name === 'InvalidPasswordException') {
-        toast.error('Password does not meet requirements');
+        toast.error('Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters');
+      } else if (error.name === 'LimitExceededException') {
+        toast.error('Too many attempts. Please try again later.');
       } else {
         toast.error('Failed to reset password. Please try again.');
       }
@@ -232,10 +267,22 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !isSubmitting && !isSuccess) {
+    if (e.key === 'Enter' && !isSubmitting && !isSuccess && hasValidCode) {
       handleContinue();
     }
   };
+
+  // Show loading while checking code
+  if (!hasValidCode) {
+    return (
+      <div className="bg-white relative size-full min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#8363f2] mb-4" />
+          <p className="text-gray-600">Verifying your session...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate top positions based on success state
   const topPosition = isSuccess ? '200px' : '160px';
@@ -272,9 +319,16 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
         Please create a new password for your account
       </p>
 
+      {/* Password Requirements */}
+      <div className="absolute left-1/2 top-[150px] translate-x-[-50%] w-[420px] mb-2">
+        <p className="text-xs text-gray-500">
+          Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters
+        </p>
+      </div>
+
       {/* Success Message */}
       {isSuccess && (
-        <div className="absolute left-1/2 top-[150px] translate-x-[-50%] w-[420px] mb-4 p-3 bg-green-50 text-green-600 rounded-md flex items-center gap-2">
+        <div className="absolute left-1/2 top-[180px] translate-x-[-50%] w-[420px] mb-4 p-3 bg-green-50 text-green-600 rounded-md flex items-center gap-2">
           <CheckCircle className="h-5 w-5" />
           <span>Password reset successful! Redirecting to login...</span>
         </div>
@@ -291,7 +345,7 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter password"
+            placeholder="Enter new password"
             disabled={isSubmitting || isSuccess}
             className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md text-sm outline-none focus:border-[#8363f2] transition-colors disabled:opacity-50"
           />
@@ -302,9 +356,9 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
             className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity disabled:opacity-50"
           >
             {showNewPassword ? (
-              <EyeOff size={18} className="text-gray-600 cursor-pointer" />
+              <EyeOff size={18} className="text-gray-600" />
             ) : (
-              <Eye size={18} className="text-gray-600 cursor-pointer" />
+              <Eye size={18} className="text-gray-600" />
             )}
           </button>
         </div>
@@ -321,7 +375,7 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Confirm password"
+            placeholder="Confirm new password"
             disabled={isSubmitting || isSuccess}
             className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md text-sm outline-none focus:border-[#8363f2] transition-colors disabled:opacity-50"
           />
@@ -332,9 +386,9 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
             className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity disabled:opacity-50"
           >
             {showConfirmPassword ? (
-              <EyeOff size={18} className="text-gray-600 cursor-pointer"/>
+              <EyeOff size={18} className="text-gray-600" />
             ) : (
-              <Eye size={18} className="text-gray-600 cursor-pointer" />
+              <Eye size={18} className="text-gray-600" />
             )}
           </button>
         </div>
@@ -343,7 +397,7 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
       {/* Continue Button */}
       <button
         onClick={handleContinue}
-        disabled={isSubmitting || isSuccess}
+        disabled={isSubmitting || isSuccess || !hasValidCode}
         className="absolute bg-[#8363f2] flex items-center justify-center left-1/2 rounded-md translate-x-[-50%] h-[40px] w-[180px] hover:bg-[#7354e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ top: buttonTopPosition }}
       >
@@ -352,7 +406,7 @@ export function CreateNewPasswordPage({ onNavigate }: CreateNewPasswordPageProps
         ) : isSuccess ? (
           <CheckCircle className="h-5 w-5 text-white" />
         ) : (
-          <p className="font-['Inter',sans-serif] font-semibold text-[14px] text-white cursor-pointer">
+          <p className="font-['Inter',sans-serif] font-semibold text-[14px] text-white">
             Continue
           </p>
         )}

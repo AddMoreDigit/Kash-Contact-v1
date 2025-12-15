@@ -71,7 +71,7 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
       <div className="absolute left-[50px] top-[24px]">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           disabled={isSubmitting}
         >
           <div className="w-[24px] h-[24px] rounded-full border border-black flex items-center justify-center">
@@ -79,7 +79,7 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
               <path d="M5 1L1 5L5 9" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="font-['Inter',sans-serif] text-[14px] text-black">
+          <span className="font-['Inter',sans-serif] text-[14px] text-black ">
             back
           </span>
         </button>

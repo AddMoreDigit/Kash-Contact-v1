@@ -4,6 +4,10 @@
 body {
   font-family: 'Oswald', sans-serif;
 }
+button {
+  cursor: pointer;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
