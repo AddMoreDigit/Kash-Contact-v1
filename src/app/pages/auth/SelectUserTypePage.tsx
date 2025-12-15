@@ -21,7 +21,7 @@ export function SelectUserTypePage({ onNavigate, onSelectUserType }: SelectUserT
       </div>
 
       {/* Title */}
-      <h1 className="mb-3 text-center">Welcome to Kash Contact Thabiso</h1>
+      <h1 className="mb-3 text-center">Welcome to Kash Contact </h1>
       <p className="text-gray-600 mb-12 text-center max-w-md">
         Please select your account type to continue
       </p>
