@@ -126,47 +126,48 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSignUp = async () => {
-  if (!validateForm()) {
-    toast.error('Please fix the errors in the form');
-    return;
-  }
+  const handleSignUp = async () => {
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
 
 
 
-  try {
-    // AWS Amplify signup with accountType as custom attribute
-    const { isSignUpComplete } = await signUp({
-      username: businessEmail,
-      password: password,
-      options: {
-        userAttributes: {
-           email:businessEmail,
-          fullname: businessName,
-          'custom:accountType': accountType // 'vendor', 'corporate', or 'user'
-        },
-        autoSignIn: true
+    try {
+
+      const { isSignUpComplete } = await signUp({
+        username: businessEmail,
+        password: password,
+        options: {
+          userAttributes: {
+            email: businessEmail,
+            // Try without 'custom:' prefix since fullname is a standard attribute
+            fullname: businessName,
+            "custom:accountType": accountType
+          },
+          autoSignIn: true
+        }
+      });
+
+      if (!isSignUpComplete) {
+        toast.success('Account created! Please check your email for verification.');
+        onNavigate('otpVerification');
+      } else {
+        toast.success('Account created successfully!');
+        onNavigate('login');
       }
-    });
 
-    if (!isSignUpComplete) {
-      toast.success('Account created! Please check your email for verification.');
-      onNavigate('otpVerification');
-    } else {
-      toast.success('Account created successfully!');
-      onNavigate('login');
-    }
+    } catch (error: any) {
+      console.error('Signup error:', error);
 
-  } catch (error: any) {
-    console.error('Signup error:', error);
-    
-    if (error.name === 'UsernameExistsException') {
-      toast.error('An account with this email already exists');
-    } else {
-      toast.error('Signup failed. Please try again.');
+      if (error.name === 'UsernameExistsException') {
+        toast.error('An account with this email already exists');
+      } else {
+        toast.error('Signup failed. Please try again.');
+      }
     }
-  } 
-};
+  };
 
   const handleBack = () => {
     onNavigate('signup');

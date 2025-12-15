@@ -8,12 +8,12 @@ import { postConfirmation } from '../functions/post-confirmation/resource';
 export const auth = defineAuth({
   loginWith: {
     email: true,
-  },  userAttributes: {
+  }, userAttributes: {
     fullname: {
       mutable: true,
-      required: true
+      required: true,
     },
-        
+
     "custom:accountType": {
       dataType: "String",
       mutable: true,
@@ -21,11 +21,11 @@ export const auth = defineAuth({
       minLen: 1,
     },
   },
-    triggers: {
+  triggers: {
     postConfirmation: postConfirmation
   },
   access: (allow) => [allow.resource(postConfirmation).to(['addUserToGroup'])],
-  groups:["user","vendor","corporate"]
+  groups: ["user", "vendor", "corporate"]
 });
 
 
