@@ -1,6 +1,7 @@
 import type { Page } from '@/types/page.type';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { resetPassword } from "aws-amplify/auth";
 
 interface ForgotPasswordPageProps {
   onNavigate: (page: Page) => void;
@@ -10,8 +11,9 @@ interface ForgotPasswordPageProps {
 
 export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPasswordPageProps) {
   const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!email.trim()) {
       toast.error('Please enter your email address');
       return;
@@ -22,14 +24,35 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
       return;
     }
 
-    if (onEmailSubmit) {
-      onEmailSubmit(email);
-    }
+    setIsSubmitting(true);
 
-    toast.success('Verification code sent to your email!');
-    setTimeout(() => {
-      onNavigate('otpVerification');
-    }, 1000);
+    try {
+      // AWS Amplify reset password
+      await resetPassword({ username: email });
+      
+      // Call the callback if provided
+      if (onEmailSubmit) {
+        onEmailSubmit(email);
+      }
+
+      toast.success('Verification code sent to your email!');
+      setTimeout(() => {
+        onNavigate('otpVerification');
+      }, 1000);
+
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      
+      if (error.name === 'UserNotFoundException') {
+        toast.error('No account found with this email');
+      } else if (error.name === 'InvalidParameterException') {
+        toast.error('Invalid email address');
+      } else {
+        toast.error('Failed to send reset code. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -37,7 +60,7 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isSubmitting) {
       handleContinue();
     }
   };
@@ -49,6 +72,7 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
         <button
           onClick={handleBack}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          disabled={isSubmitting}
         >
           <div className="w-[24px] h-[24px] rounded-full border border-black flex items-center justify-center">
             <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
@@ -68,7 +92,7 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
 
       {/* Subtitle */}
       <p className="absolute font-['Inter',sans-serif] font-normal left-1/2 text-[14px] text-black text-center top-[120px] translate-x-[-50%]">
-        Please enter email address to rest password
+        Please enter email address to reset password
       </p>
 
       {/* Email Field */}
@@ -82,17 +106,19 @@ export function ForgotPasswordPage({ onNavigate, onEmailSubmit }: ForgotPassword
           onChange={(e) => setEmail(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Enter user email address"
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#8363f2] transition-colors"
+          disabled={isSubmitting}
+          className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#8363f2] transition-colors disabled:opacity-50"
         />
       </div>
 
       {/* Continue Button */}
       <button
         onClick={handleContinue}
-        className="absolute bg-[#8363f2] flex items-center justify-center left-1/2 rounded-md top-[260px] translate-x-[-50%] h-[40px] w-[180px] hover:bg-[#7354e1] transition-colors"
+        disabled={isSubmitting}
+        className="absolute bg-[#8363f2] flex items-center justify-center left-1/2 rounded-md top-[260px] translate-x-[-50%] h-[40px] w-[180px] hover:bg-[#7354e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <p className="font-['Inter',sans-serif] font-semibold text-[14px] text-white">
-          Continue
+          {isSubmitting ? 'Sending...' : 'Continue'}
         </p>
       </button>
     </div>

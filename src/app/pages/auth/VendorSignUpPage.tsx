@@ -127,49 +127,75 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignUp = async () => {
-    if (!validateForm()) {
-      toast.error('Please fix the errors in the form');
-      return;
+const handleSignUp = async () => {
+  if (!validateForm()) {
+    toast.error('Please fix the errors in the form');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // First, call onSignUp with the user data (like original code)
+    const userData: VendorSignUpData = {
+      businessName,
+      businessEmail,
+      password,
+      acceptedTerms,
+      accountType,
+    };
+
+    if (onSignUp) {
+      onSignUp(userData);
     }
-    setIsSubmitting(true);
 
+    // Then do AWS Amplify signup
+    const { isSignUpComplete } = await signUp({
+      username: businessEmail,
+      password: password,
+      options: {
+        userAttributes: {
+          email: businessEmail,
+          given_name: businessName,
+          "custom:accountType": accountType
+        },
+        autoSignIn: true
+      }
+    });
 
-    try {
-
-      const { isSignUpComplete } = await signUp({
-        username: businessEmail,
-        password: password,
-        options: {
-          userAttributes: {
-            email: businessEmail,
-            given_name: businessName,
-            "custom:accountType": accountType
-          },
-          autoSignIn: true
-        }
-      });
-
-      if (!isSignUpComplete) {
-        toast.success('Account created! Please check your email for verification.');
+    if (!isSignUpComplete) {
+      toast.success('Account created successfully! Please verify your email.');
+      
+      // Call onCreateAccount to pass the email to parent (like original code)
+      if (onCreateAccount) {
+        onCreateAccount(businessEmail);
+      }
+      
+      // Navigate to OTP verification with delay (like original code)
+      setTimeout(() => {
         onNavigate('otpVerification');
-      } else {
-        toast.success('Account created successfully!');
+      }, 1000);
+      
+    } else {
+      toast.success('Account created successfully!');
+      setTimeout(() => {
         onNavigate('login');
-      }
-
-    } catch (error: any) {
-      console.error('Signup error:', error);
-
-      if (error.name === 'UsernameExistsException') {
-        toast.error('An account with this email already exists');
-      } else {
-        toast.error('Signup failed. Please try again.');
-      }
-    } finally {
-      setIsSubmitting(false);
+      }, 1000);
     }
-  };
+
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    
+    if (error.name === 'UsernameExistsException') {
+      toast.error('An account with this email already exists');
+    } else {
+      toast.error('Signup failed. Please try again.');
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const handleBack = () => {
     onNavigate('signup');
@@ -332,10 +358,7 @@ export function VendorSignUpPage({ onNavigate, onSignUp, accountType = 'vendor',
             onClick={handleSignUp}
             className="w-full bg-[#8363f2] text-white py-3 rounded-md text-base text-center hover:bg-[#7354e1] transition-colors mb-6 cursor-pointer"
           >
-            {isSubmitting ? (<><Loader2 className="h-4 w-4 animate-spin" />
-              Signing up </>
-
-            ) : ' Sign Up'}
+              {isSubmitting ? 'Signing up...' : 'Sign Up'}
 
           </button>
 

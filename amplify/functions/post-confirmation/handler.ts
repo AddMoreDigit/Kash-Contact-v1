@@ -2,6 +2,7 @@ import { PostConfirmationTriggerHandler } from "aws-lambda";
 import { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } from "@aws-sdk/client-cognito-identity-provider";
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
+    console.log('Called post signup trigger');
   // Get account type from custom attributes
   const accountType = event.request.userAttributes['custom:accountType'] || 'user';
   

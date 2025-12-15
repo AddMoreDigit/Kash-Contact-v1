@@ -21,8 +21,6 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
     }, 300);
   };
 
-  console.log('selectedType',selectedType);
-
   const handleBack = () => {
     onNavigate('selectUserType');
   };
@@ -74,9 +72,6 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
 
         {/* Form */}
         <div className="w-full max-w-md">
-          {/* <h2 className="text-3xl text-black mb-8 text-center">
-            Sign Up
-          </h2> */}
 
           {/* Account Type Options */}
           <div className="space-y-4">

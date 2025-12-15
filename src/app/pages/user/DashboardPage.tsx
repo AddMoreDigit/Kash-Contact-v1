@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import svgPaths from '../../imports/svg-c93d13tepm';
 import { toast } from 'sonner';
+import { fetchUserAttributes, signOut } from "aws-amplify/auth";
+import type { Page } from '@/types/page.type';
 
-type Page = 'dashboard' | 'campaigns' | 'vouchers' | 'transactions' | 'profile' | 'overview' | 'draft' | 'howItWorks' | 'campaignDetail' | 'messaging' | 'serviceDetail' | 'selectedServices' | 'createCampaign' | 'manageCampaign' | 'contributors' | 'contributorDetail' | 'campaignSchedule' | 'campaignsHistory' | 'contribute' | 'individualCampaign' | 'groupCampaign' | 'managingCampaigns' | 'helpSupport' | 'saveDraft' | 'selectServices' | 'signup' | 'vendorSignup' | 'otpVerification' | 'signupSuccess' | 'login' | 'forgotPassword' | 'createNewPassword' | 'selectUserType' | 'vendorDashboard' | 'corporateDashboard';
 
 interface DashboardPageProps {
   onNavigate: (page: Page) => void;
@@ -15,10 +16,10 @@ interface DashboardPageProps {
   accountType?: 'user' | 'vendor' | 'corporate';
 }
 
-export function DashboardPage({ 
-  onNavigate, 
-  onShowNotifications, 
-  hasUnreadNotifications = false, 
+export function DashboardPage({
+  onNavigate,
+  onShowNotifications,
+  hasUnreadNotifications = false,
   onShowCart,
   onSearch,
   onLogout,
@@ -29,6 +30,26 @@ export function DashboardPage({
 
   // Use public paths directly (no imports needed for public folder assets)
   const heroSlides = ['/asset/a3825e566b26b37668a63ccc1ccf01de1ed9f478.png'];
+
+
+
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        console.log(attributes)
+        if (attributes) {
+
+          localStorage.setItem("user", JSON.stringify(attributes?.preferred_username));
+          localStorage.setItem("user_email", JSON.stringify(attributes?.email));
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        return '';
+      }
+    };
+    getUser();
+  }, [])
 
   // Auto-advance carousel
   useEffect(() => {
@@ -90,16 +111,27 @@ export function DashboardPage({
     }
   };
 
+  const handlesignout = async () => {
+    await signOut();
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('token');
+     // Safe call
+      onLogout?.();
+  };
+
+
+
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <div className="w-[240px] bg-white border-r border-gray-300 flex flex-col">
         {/* Logo */}
         <div className="p-6 flex items-center justify-center">
-          <img 
-            alt="KC Logo" 
-            className="h-12 w-auto object-contain" 
-            src="/asset/4b4bad59041302b06eae37218f1d3bd7c64d7d1e.png" 
+          <img
+            alt="KC Logo"
+            className="h-12 w-auto object-contain"
+            src="/asset/4b4bad59041302b06eae37218f1d3bd7c64d7d1e.png"
           />
         </div>
 
@@ -110,7 +142,7 @@ export function DashboardPage({
           </p>
 
           {/* Dashboard - Active */}
-          <button 
+          <button
             onClick={() => onNavigate('dashboard')}
             className="w-full bg-[#8363f2] flex items-center gap-3 px-4 py-3 rounded-lg mb-1"
           >
@@ -121,7 +153,7 @@ export function DashboardPage({
           </button>
 
           {/* Campaigns */}
-          <button 
+          <button
             onClick={() => onNavigate('campaigns')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -132,7 +164,7 @@ export function DashboardPage({
           </button>
 
           {/* Vouchers */}
-          <button 
+          <button
             onClick={() => onNavigate('vouchers')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -143,7 +175,7 @@ export function DashboardPage({
           </button>
 
           {/* Transactions */}
-          <button 
+          <button
             onClick={() => onNavigate('transactions')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -154,7 +186,7 @@ export function DashboardPage({
           </button>
 
           {/* Profile */}
-          <button 
+          <button
             onClick={() => onNavigate('profile')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -165,7 +197,7 @@ export function DashboardPage({
           </button>
 
           {/* Overview */}
-          <button 
+          <button
             onClick={() => onNavigate('overview')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -179,7 +211,7 @@ export function DashboardPage({
           </button>
 
           {/* Draft */}
-          <button 
+          <button
             onClick={() => onNavigate('draft')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -200,7 +232,7 @@ export function DashboardPage({
           </p>
 
           {/* Help */}
-          <button 
+          <button
             onClick={() => onNavigate('helpSupport')}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -208,7 +240,7 @@ export function DashboardPage({
           </button>
 
           {/* Logout */}
-          <button 
+          <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 hover:bg-gray-100 transition-colors"
           >
@@ -216,6 +248,10 @@ export function DashboardPage({
               <path d={svgPaths.p3591e200} fill="#F63232" />
             </svg>
             <span className="font-['Inter',sans-serif] text-[14px] text-[#202020]">Logout</span>
+          </button>
+
+          <button onClick={handlesignout} className="bg-[#8363f2] hover:bg-[#7354e1] text-white px-6 py-2 rounded-lg font-['Inter',sans-serif] text-[14px] font-medium transition-colors cursor-pointer" >
+            signout
           </button>
         </div>
       </div>
@@ -279,7 +315,7 @@ export function DashboardPage({
             </button>
 
             {/* Profile Avatar */}
-            <button 
+            <button
               onClick={onShowNotifications}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -296,6 +332,8 @@ export function DashboardPage({
                 </defs>
               </svg>
             </button>
+
+
           </div>
         </div>
 
@@ -304,7 +342,7 @@ export function DashboardPage({
           <div className="p-8">
             {/* Hero Carousel */}
             <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
-              <div 
+              <div
                 onClick={() => toast.success('Viewing featured property')}
                 className="relative h-[280px] w-full cursor-pointer group"
               >
@@ -313,12 +351,12 @@ export function DashboardPage({
                   alt="Featured Property"
                   className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
-                
+
                 {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
 
                 {/* Left Arrow */}
-                <button 
+                <button
                   onClick={(e) => { e.stopPropagation(); toast.success('Previous'); }}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center hover:opacity-80"
                 >
@@ -326,7 +364,7 @@ export function DashboardPage({
                 </button>
 
                 {/* Right Arrow */}
-                <button 
+                <button
                   onClick={(e) => { e.stopPropagation(); toast.success('Next'); }}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center hover:opacity-80"
                 >
@@ -340,7 +378,7 @@ export function DashboardPage({
               <h2 className="font-['Inter',sans-serif] font-semibold text-[20px] text-gray-900">
                 Service Providers
               </h2>
-              
+
               <div className="flex items-center gap-3">
                 {/* Filter By Button */}
                 <button
