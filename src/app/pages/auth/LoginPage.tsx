@@ -130,17 +130,17 @@ export function LoginPage({
       </div>
 
       {/* Right Section - White Background */}
-      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden">
+      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden mt-20">
         {/* Logo */}
         <div className="mb-12">
           <Logo className="h-10" />
         </div>
 
         {/* Form */}
-        <div className="w-full max-w-md">
-          <h2 className="text-3xl text-black mb-8 text-center">
+        <div className="w-full max-w-md mt-10">
+          {/* <h2 className="text-3xl text-black mb-8 text-center">
             Log In
-          </h2>
+          </h2> */}
 
           {/* Email Field */}
           <div className="mb-6">

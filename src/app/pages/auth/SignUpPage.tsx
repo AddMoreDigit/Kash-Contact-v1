@@ -32,7 +32,7 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
         {/* Back Button */}
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 mb-12 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 mb-12 hover:opacity-80 transition-opacity cursor-pointer"
         >
           <div className="w-9 h-9 rounded-full border border-black flex items-center justify-center">
             <svg
@@ -64,7 +64,7 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
       </div>
 
       {/* Right Section - White Background */}
-      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden">
+      <div className="w-[51%] bg-white flex flex-col items-center py-12 px-16 pb-32 relative overflow-hidden mt-20">
         {/* Logo */}
         <div className="mb-12">
           <Logo className="h-10" />
@@ -72,16 +72,16 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
 
         {/* Form */}
         <div className="w-full max-w-md">
-          <h2 className="text-3xl text-black mb-8 text-center">
+          {/* <h2 className="text-3xl text-black mb-8 text-center">
             Sign Up
-          </h2>
+          </h2> */}
 
           {/* Account Type Options */}
           <div className="space-y-4">
             {/* As User */}
             <button
               onClick={() => handleSelectType('user')}
-              className="w-full p-4 rounded-2xl bg-[#E5DEFF] border border-transparent transition-all flex items-center justify-between group hover:shadow-md"
+              className="w-full p-4 rounded-2xl bg-[#E5DEFF] border border-transparent transition-all flex items-center justify-between group hover:shadow-md cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
@@ -100,7 +100,7 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
             {/* As Vendor */}
             <button
               onClick={() => handleSelectType('vendor')}
-              className="w-full p-4 rounded-2xl bg-white border border-gray-200 transition-all flex items-center justify-between group hover:border-[#8363F2] hover:shadow-md"
+              className="w-full p-4 rounded-2xl bg-white border border-gray-200 transition-all flex items-center justify-between group hover:border-[#8363F2] hover:shadow-md cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-[#030213] flex items-center justify-center">
@@ -141,7 +141,7 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
             Already have an account?{' '}
             <button
               onClick={() => onNavigate('login')}
-              className="text-[#8363f2] underline hover:opacity-80 transition-opacity"
+              className="text-[#8363f2] underline hover:opacity-80 transition-opacity cursor-pointer"
             >
               Login here
             </button>
