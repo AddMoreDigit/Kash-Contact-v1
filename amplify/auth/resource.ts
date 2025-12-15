@@ -12,5 +12,6 @@ export const auth = defineAuth({
       mutable: true,
       required: true
     }
-  }
+  },
+  groups:["user","vendor","corporate"]
 });

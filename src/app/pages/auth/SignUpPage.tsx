@@ -21,6 +21,8 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
     }, 300);
   };
 
+  console.log('selectedType',selectedType);
+
   const handleBack = () => {
     onNavigate('selectUserType');
   };
@@ -119,7 +121,7 @@ export function SignUpPage({ onNavigate, onSignUp }: SignUpPageProps) {
             {/* As Corporate */}
             <button
               onClick={() => handleSelectType('corporate')}
-              className="w-full p-4 rounded-2xl bg-white border border-gray-200 transition-all flex items-center justify-between group hover:border-[#8363F2] hover:shadow-md"
+              className="w-full p-4 rounded-2xl bg-white border border-gray-200 transition-all flex items-center justify-between group hover:border-[#8363F2] hover:shadow-md  cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-[#030213] flex items-center justify-center">
